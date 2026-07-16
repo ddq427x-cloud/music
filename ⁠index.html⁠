@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
   <meta charset="UTF-8">
   <title>裤佬音乐网 - 纯前端音乐播放器 (Worker版)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
