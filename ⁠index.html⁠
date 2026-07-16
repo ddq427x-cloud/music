@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN" class="dark">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
   <meta charset="UTF-8">
-  <title>裤佬音乐网 - 纯前端音乐播放器 (Worker版)</title>
+  <title>裤佬音乐网 - 纯前端版</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -178,10 +176,23 @@
 
   <audio id="audioPlayer" class="hidden"></audio>
 
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>
+    if (window.eruda) {
+      eruda.init();
+    }
+  </script>
+
   <script>
     // ============================================================
     // 核心功能：前端纯展示层，依靠 Worker 获取数据
     // ============================================================
+
+    // 全局错误捕获 (如果出现报错，直接弹窗显示)
+    window.onerror = function(message, source, lineno, colno, error) {
+      alert("网页发生错误: " + message);
+      return true;
+    };
 
     function decodeHTML(html) {
       if (!html) return '';
@@ -277,11 +288,9 @@
     function initTheme() { setTheme(localStorage.getItem('theme') !== 'light'); }
 
     // ========== API 通信层 ==========
-    
-    // 解析逻辑保持与初始源码一致
     async function searchMusic(query, page) {
       const response = await fetch(getWorkerUrl(`/api/search?query=${encodeURIComponent(query)}&page=${page}`));
-      const res = await response.json(); // 现在服务端直接返回干净的 JSON
+      const res = await response.json(); 
       
       const songs = (res.abslist || []).map(_ => ({
         id: _.MUSICRID.replace("MUSIC_", ""),
@@ -325,7 +334,7 @@
       } catch(e) { return null; }
     }
 
-    // ========== 渲染逻辑 (与源码一致) ==========
+    // ========== 渲染逻辑 ==========
     async function triggerSearch() {
       const query = searchInput.value.trim();
       if (!query) return;
@@ -436,7 +445,6 @@
       downloadSongBtn.innerHTML = `<span class="animate-pulse">⏳</span> 下载中...`;
       downloadSongBtn.disabled = true;
       try {
-        // 利用 Worker 代理绕过跨域下载文件
         const response = await fetch(getWorkerUrl(`/api/proxy?url=${encodeURIComponent(playUrl)}`));
         const blob = await response.blob();
         const a = document.createElement('a');
