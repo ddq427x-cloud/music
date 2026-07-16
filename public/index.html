@@ -75,11 +75,15 @@
 
   <!-- 导航栏 -->
   <header class="shrink-0 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-3 py-2 flex items-center justify-between relative z-40">
-    <div class="w-[80px] flex justify-start">
+    <div class="w-[100px] flex justify-start">
       <button id="favoritesViewBtn" class="p-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition cursor-pointer" title="收藏歌单">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
       </button>
-    </div>    <div class="flex items-center space-x-0.5 w-[80px] justify-end">
+      <button id="playlistsViewBtn" class="p-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition cursor-pointer" title="我的歌单">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l10-2v13M9 10l10-2M6 19a3 3 0 11-6 0 3 3 0 016 0zm13-2a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
+    <div class="flex items-center space-x-0.5 w-[80px] justify-end">
       <button id="themeToggle" class="p-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition cursor-pointer">
         <svg id="themeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path id="sunPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -105,10 +109,10 @@
           <div class="flex items-center gap-2">
             <span id="listTitle" class="font-bold text-xs text-slate-300">歌曲列表</span>
             <button id="backToSearchBtn" class="hidden text-[10px] text-brand-400 hover:text-brand-300">返回搜索</button>
-            <div id="favoritePlayControls" class="hidden items-center gap-1">
-              <button id="playFavoritesSequentialBtn" class="text-[10px] px-2 py-1 bg-brand-600 text-white rounded-lg">顺序播放</button>
-              <button id="playFavoritesRandomBtn" class="text-[10px] px-2 py-1 bg-slate-800 text-slate-300 rounded-lg">随机播放</button>
-              <button id="clearFavoritesBtn" class="text-[10px] px-2 py-1 bg-slate-800 text-red-400 rounded-lg">清空</button>
+            <div id="collectionPlayControls" class="hidden items-center gap-1">
+              <button id="playCollectionSequentialBtn" class="text-[10px] px-2 py-1 bg-brand-600 text-white rounded-lg">顺序播放</button>
+              <button id="playCollectionRandomBtn" class="text-[10px] px-2 py-1 bg-slate-800 text-slate-300 rounded-lg">随机播放</button>
+              <button id="clearCollectionBtn" class="text-[10px] px-2 py-1 bg-slate-800 text-red-400 rounded-lg">清空</button>
             </div>
           </div>
           <span id="pageIndicator" class="text-[10px] text-slate-500">第 1 页</span>
@@ -217,6 +221,27 @@
     </div>
   </div>
 
+  <!-- 我的歌单管理 -->
+  <div id="playlistManagerModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-xl w-full p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar">
+      <div class="flex justify-between items-center"><h3 class="text-base font-bold">我的歌单</h3><button id="closePlaylistManagerBtn" class="text-slate-400 hover:text-white">✕</button></div>
+      <div class="grid grid-cols-1 gap-2">
+        <input id="playlistNameInput" maxlength="80" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm" placeholder="新歌单名称">
+        <textarea id="playlistDescriptionInput" maxlength="300" rows="2" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs resize-none" placeholder="歌单简介（可选）"></textarea>
+        <button id="createPlaylistBtn" class="bg-brand-600 hover:bg-brand-700 text-white text-sm py-2 rounded-lg">新建歌单</button>
+      </div>
+      <div id="playlistManagerList" class="space-y-2"><div class="text-xs text-slate-500">登录后加载歌单</div></div>
+    </div>
+  </div>
+
+  <!-- 添加歌曲到歌单 -->
+  <div id="addToPlaylistModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4">
+      <div class="flex justify-between items-center"><h3 class="text-base font-bold">加入歌单</h3><button id="closeAddToPlaylistBtn" class="text-slate-400 hover:text-white">✕</button></div>
+      <div id="addToPlaylistList" class="space-y-2 max-h-[55vh] overflow-y-auto no-scrollbar"></div>
+    </div>
+  </div>
+
   <audio id="audioPlayer" class="hidden"></audio>
 
   <script>
@@ -321,14 +346,24 @@
     const authError = document.getElementById('authError');
     const authSubmitBtn = document.getElementById('authSubmitBtn');
     const authSwitchBtn = document.getElementById('authSwitchBtn');
-    const favoritePlayControls = document.getElementById('favoritePlayControls');
-    const playFavoritesSequentialBtn = document.getElementById('playFavoritesSequentialBtn');
-    const playFavoritesRandomBtn = document.getElementById('playFavoritesRandomBtn');
-    const clearFavoritesBtn = document.getElementById('clearFavoritesBtn');
+    const collectionPlayControls = document.getElementById('collectionPlayControls');
+    const playCollectionSequentialBtn = document.getElementById('playCollectionSequentialBtn');
+    const playCollectionRandomBtn = document.getElementById('playCollectionRandomBtn');
+    const clearCollectionBtn = document.getElementById('clearCollectionBtn');
     const sourceList = document.getElementById('sourceList');
     const sourceNameInput = document.getElementById('sourceNameInput');
     const sourceUrlInput = document.getElementById('sourceUrlInput');
     const addSourceBtn = document.getElementById('addSourceBtn');
+    const playlistsViewBtn = document.getElementById('playlistsViewBtn');
+    const playlistManagerModal = document.getElementById('playlistManagerModal');
+    const closePlaylistManagerBtn = document.getElementById('closePlaylistManagerBtn');
+    const playlistNameInput = document.getElementById('playlistNameInput');
+    const playlistDescriptionInput = document.getElementById('playlistDescriptionInput');
+    const createPlaylistBtn = document.getElementById('createPlaylistBtn');
+    const playlistManagerList = document.getElementById('playlistManagerList');
+    const addToPlaylistModal = document.getElementById('addToPlaylistModal');
+    const closeAddToPlaylistBtn = document.getElementById('closeAddToPlaylistBtn');
+    const addToPlaylistList = document.getElementById('addToPlaylistList');
 
     // ========== 状态 ==========
     let currentQuery = '';
@@ -337,13 +372,16 @@
     let currentIndex = -1;
     let lyrics = [];
     let lastActiveIdx = -1;
-    let currentView = 'search';
+    let currentView = 'search'; activeCustomPlaylist=null;
     let currentSongId = null;
     let favorites = [];
     let currentUser = null;
     let musicSources = [];
     let selectedSource = null;
-    let favoritePlaybackMode = 'sequential';
+    let collectionPlaybackMode = 'sequential';
+    let customPlaylists = [];
+    let activeCustomPlaylist = null;
+    let pendingPlaylistSong = null;
 
     async function apiFetch(url, options = {}) {
       const res = await fetch(url, { credentials: 'same-origin', ...options, headers: { 'content-type': 'application/json', ...(options.headers || {}) } });
@@ -381,12 +419,12 @@
       currentView = 'favorites'; playlist = [...favorites];
       currentIndex = currentSongId ? playlist.findIndex(song => String(song.id) === String(currentSongId)) : -1;
       listTitle.innerText = `收藏歌单 (${favorites.length})`;
-      backToSearchBtn.classList.remove('hidden'); favoritePlayControls.classList.remove('hidden'); favoritePlayControls.classList.add('flex');
+      backToSearchBtn.classList.remove('hidden'); collectionPlayControls.classList.remove('hidden'); collectionPlayControls.classList.add('flex');
       pageIndicator.classList.add('hidden'); pagination.classList.add('hidden'); renderPlaylist();
     }
     function showSearchResults() {
-      currentView = 'search'; listTitle.innerText = '歌曲列表'; backToSearchBtn.classList.add('hidden');
-      favoritePlayControls.classList.add('hidden'); favoritePlayControls.classList.remove('flex'); pageIndicator.classList.remove('hidden');
+      currentView = 'search'; activeCustomPlaylist=null; listTitle.innerText = '歌曲列表'; backToSearchBtn.classList.add('hidden');
+      collectionPlayControls.classList.add('hidden'); collectionPlayControls.classList.remove('flex'); pageIndicator.classList.remove('hidden');
       if (currentQuery) loadSearchList(); else musicList.innerHTML = '<div class="text-center text-slate-500 py-12 text-sm">输入歌曲名开始搜索吧 ✨</div>';
     }
     function buildPlayUrl(song) {
@@ -430,6 +468,32 @@
     function initTheme() {
       const saved = localStorage.getItem('theme');
       setTheme(saved !== 'light');
+    }
+
+    async function loadCustomPlaylists() {
+      if (!currentUser) { customPlaylists=[]; return; }
+      const data=await apiFetch('/api/playlists'); customPlaylists=data.playlists||[];
+    }
+    function renderPlaylistManager() {
+      if (!currentUser) { playlistManagerList.innerHTML='<div class="text-xs text-slate-500">请先登录</div>'; return; }
+      if (!customPlaylists.length) { playlistManagerList.innerHTML='<div class="text-center text-xs text-slate-500 py-5">还没有自定义歌单</div>'; return; }
+      playlistManagerList.innerHTML=customPlaylists.map(pl=>`<div class="flex items-center gap-2 p-3 bg-slate-950/50 border border-slate-800 rounded-xl">
+        <button data-open-playlist="${pl.id}" class="min-w-0 flex-1 text-left"><div class="text-sm font-semibold truncate">${escapeHTML(pl.name)}</div><div class="text-[10px] text-slate-500 truncate">${escapeHTML(pl.description||'暂无简介')} · ${pl.song_count||0} 首</div></button>
+        <button data-edit-playlist="${pl.id}" class="text-[10px] px-2 py-1 bg-slate-800 rounded text-brand-400">编辑</button>
+        <button data-delete-playlist="${pl.id}" class="text-[10px] px-2 py-1 bg-slate-800 rounded text-red-400">删除</button>
+      </div>`).join('');
+    }
+    function escapeHTML(v='') { const d=document.createElement('div'); d.textContent=String(v); return d.innerHTML; }
+    async function openPlaylistManager() { if(!requireLogin())return; await loadCustomPlaylists(); renderPlaylistManager(); playlistManagerModal.classList.remove('hidden'); }
+    async function showCustomPlaylist(id) {
+      if(!requireLogin())return; const data=await apiFetch(`/api/playlists/${encodeURIComponent(id)}/songs`);
+      activeCustomPlaylist=data.playlist; playlist=data.songs||[]; currentView='custom'; currentIndex=currentSongId?playlist.findIndex(x=>String(x.id)===String(currentSongId)):-1;
+      listTitle.innerText=`${activeCustomPlaylist.name} (${playlist.length})`; backToSearchBtn.classList.remove('hidden'); collectionPlayControls.classList.remove('hidden'); collectionPlayControls.classList.add('flex'); pageIndicator.classList.add('hidden'); pagination.classList.add('hidden'); playlistManagerModal.classList.add('hidden'); renderPlaylist();
+    }
+    async function openAddToPlaylist(song) {
+      if(!requireLogin())return; pendingPlaylistSong=song; await loadCustomPlaylists();
+      addToPlaylistList.innerHTML=customPlaylists.length?customPlaylists.map(pl=>`<button data-add-to-playlist="${pl.id}" class="w-full text-left p-3 bg-slate-950 border border-slate-800 rounded-xl hover:border-brand-500"><div class="text-sm font-semibold">${escapeHTML(pl.name)}</div><div class="text-[10px] text-slate-500">${pl.song_count||0} 首</div></button>`).join(''):'<div class="text-xs text-slate-500 text-center py-4">请先创建歌单</div>';
+      addToPlaylistModal.classList.remove('hidden');
     }
 
     // ========== API ==========
@@ -544,7 +608,9 @@
       if (!playlist.length) {
         musicList.innerHTML = currentView === 'favorites'
           ? '<div class="text-center text-slate-500 py-12 text-xs">还没有收藏歌曲，搜索后点爱心即可收藏 ❤️</div>'
-          : '<div class="text-center text-slate-500 py-12 text-xs">没有找到相关音乐 😭</div>';
+          : currentView === 'custom'
+            ? '<div class="text-center text-slate-500 py-12 text-xs">这个歌单还没有歌曲，搜索后点击＋加入</div>'
+            : '<div class="text-center text-slate-500 py-12 text-xs">没有找到相关音乐 😭</div>';
         return;
       }
       musicList.innerHTML = playlist.map((song, idx) => {
@@ -560,6 +626,8 @@
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0 ml-2">
+              <button data-add-playlist-index="${idx}" class="p-1.5 rounded-full hover:bg-slate-800 text-slate-500 hover:text-brand-400" title="加入歌单">＋</button>
+              ${currentView === 'custom' ? `<button data-remove-playlist-index="${idx}" class="p-1.5 rounded-full hover:bg-slate-800 text-red-400" title="从歌单移除">✕</button>` : ''}
               <button data-favorite-index="${idx}" class="p-1.5 rounded-full hover:bg-slate-800 transition ${liked ? 'text-pink-500' : 'text-slate-500 hover:text-pink-400'}" title="${liked ? '取消收藏' : '收藏'}">
                 <svg class="w-4 h-4" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
               </button>
@@ -717,7 +785,7 @@
 
     function nextPlaybackIndex(direction = 1) {
       if (!playlist.length) return -1;
-      if (currentView === 'favorites' && favoritePlaybackMode === 'random' && playlist.length > 1) {
+      if ((currentView === 'favorites' || currentView === 'custom') && collectionPlaybackMode === 'random' && playlist.length > 1) {
         let next; do { next = Math.floor(Math.random() * playlist.length); } while (next === currentIndex); return next;
       }
       return direction > 0 ? (currentIndex < playlist.length - 1 ? currentIndex + 1 : 0) : (currentIndex > 0 ? currentIndex - 1 : playlist.length - 1);
@@ -727,7 +795,11 @@
     // ========== 事件绑定 ==========
     searchBtn.onclick = triggerSearch;
     searchInput.onkeypress = e => { if(e.key === 'Enter') triggerSearch(); };
-    musicList.addEventListener('click', e => {
+    musicList.addEventListener('click', async e => {
+      const addBtn=e.target.closest('[data-add-playlist-index]');
+      if(addBtn){e.stopPropagation();const idx=Number(addBtn.dataset.addPlaylistIndex);if(playlist[idx])await openAddToPlaylist(playlist[idx]);return;}
+      const removeBtn=e.target.closest('[data-remove-playlist-index]');
+      if(removeBtn){e.stopPropagation();const idx=Number(removeBtn.dataset.removePlaylistIndex);if(activeCustomPlaylist&&playlist[idx]&&confirm('从这个歌单移除歌曲？')){await apiFetch(`/api/playlists/${encodeURIComponent(activeCustomPlaylist.id)}/songs/${encodeURIComponent(playlist[idx].id)}`,{method:'DELETE'});await showCustomPlaylist(activeCustomPlaylist.id);}return;}
       const favoriteBtn = e.target.closest('[data-favorite-index]');
       if (favoriteBtn) {
         e.stopPropagation();
@@ -766,23 +838,30 @@
     let authMode = 'login';
     function openAuthModal() { authModal.classList.remove('hidden'); authError.classList.add('hidden'); }
     function updateAuthUI() { authBtn.textContent = currentUser ? `${currentUser.username} · 退出` : '登录'; }
-    authBtn.onclick = async () => { if (currentUser) { await apiFetch('/api/auth/logout',{method:'POST',body:'{}'}); currentUser=null; favorites=[]; musicSources=[]; selectedSource=null; updateAuthUI(); showSearchResults(); } else openAuthModal(); };
+    authBtn.onclick = async () => { if (currentUser) { await apiFetch('/api/auth/logout',{method:'POST',body:'{}'}); currentUser=null; favorites=[]; customPlaylists=[]; activeCustomPlaylist=null; musicSources=[]; selectedSource=null; updateAuthUI(); showSearchResults(); } else openAuthModal(); };
     closeAuthBtn.onclick = () => authModal.classList.add('hidden');
     authSwitchBtn.onclick = () => { authMode = authMode === 'login' ? 'register' : 'login'; authTitle.textContent = authMode==='login'?'登录':'注册'; authSubmitBtn.textContent=authTitle.textContent; authSwitchBtn.textContent=authMode==='login'?'没有账户？注册':'已有账户？登录'; };
-    authSubmitBtn.onclick = async () => { try { authError.classList.add('hidden'); const data=await apiFetch(`/api/auth/${authMode}`,{method:'POST',body:JSON.stringify({username:authUsername.value.trim(),password:authPassword.value})}); currentUser=data.user; authModal.classList.add('hidden'); authPassword.value=''; updateAuthUI(); await Promise.all([loadFavorites(),loadSources()]); } catch(e){ authError.textContent=e.message; authError.classList.remove('hidden'); } };
+    authSubmitBtn.onclick = async () => { try { authError.classList.add('hidden'); const data=await apiFetch(`/api/auth/${authMode}`,{method:'POST',body:JSON.stringify({username:authUsername.value.trim(),password:authPassword.value})}); currentUser=data.user; authModal.classList.add('hidden'); authPassword.value=''; updateAuthUI(); await Promise.all([loadFavorites(),loadSources(),loadCustomPlaylists()]); } catch(e){ authError.textContent=e.message; authError.classList.remove('hidden'); } };
     settingsBtn.onclick = async () => { proxyInput.value = localStorage.getItem('music_cors_proxy') || 'https://jsnzkpg4.pages.dev/'; settingsModal.classList.remove('hidden'); await loadSources(); };
     closeSettingsBtn.onclick = () => settingsModal.classList.add('hidden');
     saveProxyBtn.onclick = () => { const v=proxyInput.value.trim(); if(v)localStorage.setItem('music_cors_proxy',v); else localStorage.removeItem('music_cors_proxy'); alert('代理设置已保存'); };
     addSourceBtn.onclick = async () => { if(!requireLogin())return; try{ await apiFetch('/api/sources',{method:'POST',body:JSON.stringify({name:sourceNameInput.value.trim(),url_template:sourceUrlInput.value.trim()})}); sourceNameInput.value=''; sourceUrlInput.value=''; await loadSources(); }catch(e){alert(e.message);} };
     sourceList.onclick = async e => { const select=e.target.closest('[data-select-source]'), del=e.target.closest('[data-delete-source]'), edit=e.target.closest('[data-edit-source]'); try { if(select){await apiFetch(`/api/sources/${select.dataset.selectSource}/select`,{method:'POST',body:'{}'}); await loadSources();} if(del&&!del.disabled&&confirm('删除这个音源？')){await apiFetch(`/api/sources/${del.dataset.deleteSource}`,{method:'DELETE'}); await loadSources();} if(edit){const src=musicSources.find(x=>String(x.id)===edit.dataset.editSource); const name=prompt('音源名称',src.name); if(name===null)return; const url=prompt('API URL 模板',src.url_template); if(url===null)return; await apiFetch(`/api/sources/${src.id}`,{method:'PUT',body:JSON.stringify({name,url_template:url})}); await loadSources();} } catch(err){alert(err.message);} };
-    playFavoritesSequentialBtn.onclick = async () => { favoritePlaybackMode='sequential'; await showFavorites(); if(playlist.length) playSong(0); };
-    playFavoritesRandomBtn.onclick = async () => { favoritePlaybackMode='random'; await showFavorites(); if(playlist.length) playSong(Math.floor(Math.random()*playlist.length)); };
-    clearFavoritesBtn.onclick = async () => { if(!favorites.length||!confirm('确定清空全部收藏？'))return; await apiFetch('/api/favorites',{method:'DELETE'}); await loadFavorites(); await showFavorites(); };
+    playCollectionSequentialBtn.onclick = async () => { collectionPlaybackMode='sequential'; if(playlist.length) playSong(0); };
+    playCollectionRandomBtn.onclick = async () => { collectionPlaybackMode='random'; if(playlist.length) playSong(Math.floor(Math.random()*playlist.length)); };
+    clearCollectionBtn.onclick = async () => {
+      if(currentView==='favorites'){if(!favorites.length||!confirm('确定清空全部收藏？'))return;await apiFetch('/api/favorites',{method:'DELETE'});await loadFavorites();await showFavorites();}
+      else if(currentView==='custom'&&activeCustomPlaylist){if(!playlist.length||!confirm('确定清空这个歌单？'))return;await apiFetch(`/api/playlists/${encodeURIComponent(activeCustomPlaylist.id)}/songs`,{method:'DELETE'});await showCustomPlaylist(activeCustomPlaylist.id);}
+    };
+    playlistsViewBtn.onclick=openPlaylistManager; closePlaylistManagerBtn.onclick=()=>playlistManagerModal.classList.add('hidden'); closeAddToPlaylistBtn.onclick=()=>addToPlaylistModal.classList.add('hidden');
+    createPlaylistBtn.onclick=async()=>{if(!requireLogin())return;try{await apiFetch('/api/playlists',{method:'POST',body:JSON.stringify({name:playlistNameInput.value.trim(),description:playlistDescriptionInput.value.trim()})});playlistNameInput.value='';playlistDescriptionInput.value='';await loadCustomPlaylists();renderPlaylistManager();}catch(e){alert(e.message);}};
+    playlistManagerList.onclick=async e=>{const open=e.target.closest('[data-open-playlist]'),edit=e.target.closest('[data-edit-playlist]'),del=e.target.closest('[data-delete-playlist]');try{if(open)await showCustomPlaylist(open.dataset.openPlaylist);if(edit){const pl=customPlaylists.find(x=>x.id===edit.dataset.editPlaylist);const name=prompt('歌单名称',pl.name);if(name===null)return;const description=prompt('歌单简介',pl.description||'');if(description===null)return;await apiFetch(`/api/playlists/${encodeURIComponent(pl.id)}`,{method:'PUT',body:JSON.stringify({name,description})});await loadCustomPlaylists();renderPlaylistManager();}if(del&&confirm('删除歌单及其中歌曲？')){await apiFetch(`/api/playlists/${encodeURIComponent(del.dataset.deletePlaylist)}`,{method:'DELETE'});await loadCustomPlaylists();renderPlaylistManager();}}catch(err){alert(err.message);}};
+    addToPlaylistList.onclick=async e=>{const btn=e.target.closest('[data-add-to-playlist]');if(!btn||!pendingPlaylistSong)return;try{await apiFetch(`/api/playlists/${encodeURIComponent(btn.dataset.addToPlaylist)}/songs`,{method:'POST',body:JSON.stringify(pendingPlaylistSong)});addToPlaylistModal.classList.add('hidden');pendingPlaylistSong=null;alert('已加入歌单');}catch(err){alert(err.message);}};
 
     // ========== 初始化 ==========
     async function initApp() {
       initTheme(); playerCover.src=DEFAULT_COVER; playerCover.onerror=function(){this.src=DEFAULT_COVER;};
-      try { const data=await apiFetch('/api/auth/me'); currentUser=data.user; updateAuthUI(); if(currentUser) await Promise.all([loadFavorites(),loadSources()]); } catch(e){ console.warn(e); }
+      try { const data=await apiFetch('/api/auth/me'); currentUser=data.user; updateAuthUI(); if(currentUser) await Promise.all([loadFavorites(),loadSources(),loadCustomPlaylists()]); } catch(e){ console.warn(e); }
       console.log('🎵 裤佬音乐网已加载');
     }
     initApp();

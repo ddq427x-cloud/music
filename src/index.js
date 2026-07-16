@@ -139,6 +139,64 @@ async function api(request, env, url) {
   const favMatch=url.pathname.match(/^\/api\/favorites\/([^/]+)$/);
   if (favMatch && method==='DELETE') { await env.DB.prepare('DELETE FROM favorites WHERE user_id=? AND song_id=?').bind(user.id,decodeURIComponent(favMatch[1])).run(); return json({ok:true}); }
 
+  // 自定义歌单
+  if (url.pathname === '/api/playlists' && method === 'GET') {
+    const { results } = await env.DB.prepare(`
+      SELECT p.id,p.name,p.description,p.created_at,p.updated_at,COUNT(ps.song_id) AS song_count
+      FROM playlists p LEFT JOIN playlist_songs ps ON ps.playlist_id=p.id
+      WHERE p.user_id=? GROUP BY p.id ORDER BY p.updated_at DESC,p.created_at DESC
+    `).bind(user.id).all();
+    return json({ ok:true, playlists:results });
+  }
+  if (url.pathname === '/api/playlists' && method === 'POST') {
+    const b=await bodyJson(request); const name=String(b?.name||'').trim(); const description=String(b?.description||'').trim();
+    if (!name || name.length>80) return error('歌单名称需为 1-80 个字符');
+    if (description.length>300) return error('歌单简介最多 300 个字符');
+    const count=await env.DB.prepare('SELECT COUNT(*) AS c FROM playlists WHERE user_id=?').bind(user.id).first();
+    if (+count.c>=50) return error('每个用户最多创建 50 个歌单');
+    const id=crypto.randomUUID(), now=Math.floor(Date.now()/1000);
+    await env.DB.prepare('INSERT INTO playlists (id,user_id,name,description,created_at,updated_at) VALUES (?,?,?,?,?,?)').bind(id,user.id,name,description,now,now).run();
+    return json({ok:true,playlist:{id,name,description,song_count:0,created_at:now,updated_at:now}},201);
+  }
+  const playlistMatch=url.pathname.match(/^\/api\/playlists\/([^/]+)$/);
+  if (playlistMatch && method==='PUT') {
+    const id=decodeURIComponent(playlistMatch[1]), b=await bodyJson(request); const name=String(b?.name||'').trim(); const description=String(b?.description||'').trim();
+    if (!name || name.length>80) return error('歌单名称需为 1-80 个字符');
+    if (description.length>300) return error('歌单简介最多 300 个字符');
+    const result=await env.DB.prepare('UPDATE playlists SET name=?,description=?,updated_at=? WHERE id=? AND user_id=?').bind(name,description,Math.floor(Date.now()/1000),id,user.id).run();
+    if (!result.meta.changes) return error('歌单不存在',404); return json({ok:true});
+  }
+  if (playlistMatch && method==='DELETE') {
+    const id=decodeURIComponent(playlistMatch[1]);
+    const result=await env.DB.prepare('DELETE FROM playlists WHERE id=? AND user_id=?').bind(id,user.id).run();
+    if (!result.meta.changes) return error('歌单不存在',404); return json({ok:true});
+  }
+  const playlistSongsMatch=url.pathname.match(/^\/api\/playlists\/([^/]+)\/songs$/);
+  if (playlistSongsMatch && method==='GET') {
+    const id=decodeURIComponent(playlistSongsMatch[1]);
+    const pl=await env.DB.prepare('SELECT id,name,description FROM playlists WHERE id=? AND user_id=?').bind(id,user.id).first();
+    if (!pl) return error('歌单不存在',404);
+    const {results}=await env.DB.prepare('SELECT song_id AS id,title,artist,album,artwork,sort_order,created_at FROM playlist_songs WHERE playlist_id=? ORDER BY sort_order ASC,created_at ASC').bind(id).all();
+    return json({ok:true,playlist:pl,songs:results});
+  }
+  if (playlistSongsMatch && method==='POST') {
+    const id=decodeURIComponent(playlistSongsMatch[1]), b=await bodyJson(request);
+    const pl=await env.DB.prepare('SELECT id FROM playlists WHERE id=? AND user_id=?').bind(id,user.id).first();
+    if (!pl) return error('歌单不存在',404); if(!b?.id||!b?.title)return error('歌曲数据不完整');
+    const max=await env.DB.prepare('SELECT COALESCE(MAX(sort_order),-1)+1 AS n FROM playlist_songs WHERE playlist_id=?').bind(id).first(); const now=Math.floor(Date.now()/1000);
+    await env.DB.prepare(`INSERT INTO playlist_songs (playlist_id,song_id,title,artist,album,artwork,sort_order,created_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(playlist_id,song_id) DO UPDATE SET title=excluded.title,artist=excluded.artist,album=excluded.album,artwork=excluded.artwork`).bind(id,String(b.id),String(b.title).slice(0,300),String(b.artist||'').slice(0,300),String(b.album||'').slice(0,300),String(b.artwork||'').slice(0,1000),+max.n,now).run();
+    await env.DB.prepare('UPDATE playlists SET updated_at=? WHERE id=?').bind(now,id).run(); return json({ok:true},201);
+  }
+  if (playlistSongsMatch && method==='DELETE') {
+    const id=decodeURIComponent(playlistSongsMatch[1]); const pl=await env.DB.prepare('SELECT id FROM playlists WHERE id=? AND user_id=?').bind(id,user.id).first(); if(!pl)return error('歌单不存在',404);
+    await env.DB.prepare('DELETE FROM playlist_songs WHERE playlist_id=?').bind(id).run(); await env.DB.prepare('UPDATE playlists SET updated_at=? WHERE id=?').bind(Math.floor(Date.now()/1000),id).run(); return json({ok:true});
+  }
+  const playlistSongMatch=url.pathname.match(/^\/api\/playlists\/([^/]+)\/songs\/([^/]+)$/);
+  if (playlistSongMatch && method==='DELETE') {
+    const id=decodeURIComponent(playlistSongMatch[1]), songId=decodeURIComponent(playlistSongMatch[2]); const pl=await env.DB.prepare('SELECT id FROM playlists WHERE id=? AND user_id=?').bind(id,user.id).first(); if(!pl)return error('歌单不存在',404);
+    await env.DB.prepare('DELETE FROM playlist_songs WHERE playlist_id=? AND song_id=?').bind(id,songId).run(); await env.DB.prepare('UPDATE playlists SET updated_at=? WHERE id=?').bind(Math.floor(Date.now()/1000),id).run(); return json({ok:true});
+  }
+
   if (url.pathname === '/api/sources' && method === 'GET') {
     const {results}=await env.DB.prepare('SELECT id,name,url_template,is_selected,created_at FROM music_sources WHERE user_id=? ORDER BY is_selected DESC,created_at ASC').bind(user.id).all();
     return json({ok:true,sources:results});
